@@ -5,7 +5,8 @@ require 'optparse'
 require 'yaml'
 require 'twitter'
 
-CONFIG_FILE     = File.join(File.dirname(__FILE__), 'conf.yaml')
+BASE_DIR	= File.join(File.dirname(__FILE__), '..')
+CONFIG_FILE	= File.join(BASE_DIR, 'conf.yaml')
 FILE_BASENAME   = File.basename(__FILE__)
 
 
@@ -22,7 +23,7 @@ end
 
 
 def open_database
-	DBM.open($config['keymanager']['keyfile'], 0600, DBM::WRCREAT)
+	DBM.open(File.join(BASE_DIR, $config['keymanager']['keyfile']), 0600, DBM::WRCREAT)
 end
 
 
