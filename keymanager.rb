@@ -56,13 +56,15 @@ def get_options
 end
 
 
-# TODO: verify that key isn't already in database
+# verify that key isn't already in database
 def does_key_exist(oauth_token, oauth_secret)
-	false
+	db = $config[:db]       # make things simple
+
+	db.has_key?(oauth_token) ? true : false
 end
 
 
-# TODO: validate that the key still works against Twitter's API
+# validate that the key still works against Twitter's API
 def is_key_alive(oauth_token, oauth_secret)
 	tw = Twitter::REST::Client.new do |config|
 		config.consumer_key = $config['keymanager']['app_key']
