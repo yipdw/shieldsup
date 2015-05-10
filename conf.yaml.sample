@@ -1,0 +1,5 @@
+keymanager:
+  enabled: true
+  keyfile: NAME_OF_APP
+  app_key: TWITTER_APP_KEY 
+  app_secret: TWITTER_APP_SECRET 
