@@ -1,2 +1,10 @@
 conf.yaml
-ggab_oauth.db
+*.db
+*.swp
+*.swo
+Gemfile.lock
+doc/*
+log/*
+pkg/*
+tmp/*
+.DS_Store
