@@ -3,6 +3,7 @@
 require 'dbm'
 require 'optparse'
 require 'yaml'
+require 'twitter'
 
 CONFIG_FILE     = File.join(File.dirname(__FILE__), 'conf.yaml')
 FILE_BASENAME   = File.basename(__FILE__)
@@ -62,8 +63,19 @@ end
 
 
 # TODO: validate that the key still works against Twitter's API
-def is_key_dead(oauth_token, oauth_secret)
-	false
+def is_key_alive(oauth_token, oauth_secret)
+	tw = Twitter::REST::Client.new do |config|
+		config.consumer_key = $config['keymanager']['app_key']
+		config.consumer_secret = $config['keymanager']['app_secret']
+		config.access_token = oauth_token
+		config.access_token_secret = oauth_secret
+	end
+
+	begin
+		tw.verify_credentials
+	rescue Twitter::Error::Unauthorized => error
+		return false
+	end
 end
 
 
@@ -92,7 +104,7 @@ def add_key_action(option)
 		exit
 	end
 
-	if is_key_dead(option[:oauth_token], option[:oauth_secret])
+	if is_key_alive(option[:oauth_token], option[:oauth_secret]) == false
 		puts "Oauth token deauthorized."
 		exit
 	end
