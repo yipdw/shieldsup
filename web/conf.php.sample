@@ -1,0 +1,13 @@
+<?php
+
+$socket_file = "/usr/local/oapi/shieldsup.sock";
+$app_key = ''; 
+$app_secret = ''; 
+$callback_url = ''; 
+$db_host = '';
+$db_user = '';
+$db_pass = '';
+$db_name = '';
+
+?>
+
