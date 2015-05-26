@@ -415,6 +415,14 @@ end
 
 
 
+# simple function just to see if job is done.
+# returns: true if done, false if not.
+def is_job_done
+	get_db_status =~ /^DONE$/ ? true : false
+end
+
+
+
 # main thread function for incoming connections
 def handle_client
 	$log.info("New connection")
