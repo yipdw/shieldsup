@@ -36,7 +36,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 		// If not, let's add it to the database
 		if(empty($result)){
 			// todo: this needs to be sanitized.
-			$query = mysql_query("INSERT INTO tokens (userid, oauth_token, oauth_secret, added, accessed) VALUES ('{$user_info->id}', '{$access_token['oauth_token']}', '{$access_token['oauth_token_secret']}', NOW(), NOW())");
+			$query = mysql_query("INSERT INTO tokens (userid, oauth_token, oauth_secret, added) VALUES ('{$user_info->id}', '{$access_token['oauth_token']}', '{$access_token['oauth_token_secret']}', NOW())");
 			$query = mysql_query("SELECT * FROM tokens WHERE id = " . mysql_insert_id());
 			$result = mysql_fetch_array($query);
 		} else {

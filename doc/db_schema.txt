@@ -3,5 +3,5 @@ create table tokens (
     userid bigint not null,              
     oauth_token text,         
     oauth_secret text,
-    added timestamp,             
-    accessed timestamp );
+    accessed timestamp,
+    added timestamp );
