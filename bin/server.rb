@@ -253,12 +253,16 @@ def read_from_file
 		return false
 	end
 
+	Thread.current['client'].puts("BEGIN_LIST")
+
 	# read from file
 	File.open(filename, "r") do |f|
 		f.each_line do |line|
 			Thread.current['client'].puts(line)
 		end
 	end
+
+	Thread.current['client'].puts("END_LIST")
 end
 
 
@@ -316,7 +320,8 @@ end
 def go_command
 	# see if a job is already running. cheap and easy way of doing it.
 	# should probably be more graceful about it
-	return if status_command
+	return if is_job_running
+	return if is_job_done 
 
 	# copy our connection data out to a new variable
 	conn = Thread.current['conn']
