@@ -1,0 +1,57 @@
+UNIX socket protocol
+====================
+
+on every connect, use this:
+
+client> [APP_KEY]            # transmit the app key/secret so the backend could 
+client> [APP_SECRET]         # potentially be built out for different apps
+client> [OAUTH_TOKEN]
+client> [OAUTH_SECRET]
+
+responses:
+
+server> AUTH_OK              # server verified twitter auth is valid
+server> AUTH_ERR             # bad auth, redirect back to login page
+
+
+
+
+
+>> create the initial request from frontend input
+
+client> USER [USERNAME]      # specify target user to query
+client> RT [1|0]             # include RTs? default to 1
+client> REPLY [1|0]          # include replies? default to 0
+client> GO                   # finished creating request, frontend refresh to wait page
+
+
+
+
+
+>> refresh loop on frontend. auth as before, but with additional responses.
+
+server> ERR_OPTS             # must enable at least one of RT or REPLY
+server> ERR_TWITTER [MSG]    # got error code from twitter, display output
+server> ERR_OTHER [MSG]      # had some other kind of problem, display output
+server> WAIT                 # processing prev request, set refresh to try again
+server> DONE                 # processing complete, redirect to response page 
+
+
+
+
+
+>> after done is received, response page should be shown. this is designed in
+>> such a way because we'll be adding more functionality in the future.
+
+client> GET_LIST             # output a list of usernames
+
+server> ERR_OTHER [MSG]      # had a problem, display output
+server> BEGIN_LIST           # return list of users, friend/follower set to 0/1
+server> [USERID] [USERNAME] [ISFRIEND] [ISFOLLOWER]
+server> [USERID] [USERNAME] [ISFRIEND] [ISFOLLOWER]
+server> [USERID] [USERNAME] [ISFRIEND] [ISFOLLOWER]
+server> END_LIST 
+
+
+>> frontend can also create a file for download based off of this data.
+>> http://stackoverflow.com/questions/15390769/how-to-download-a-temporary-file
