@@ -297,11 +297,7 @@ end
 # simple function just to see if job is currently running.
 # returns: true if running, false if not.
 def is_job_running
-	if get_db_status =~ /^RUNNING$/
-		true
-	else
-		false
-	end
+	get_db_status =~ /^RUNNING$/ ? true : false
 end
 
 
