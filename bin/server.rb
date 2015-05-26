@@ -5,7 +5,7 @@ require 'pp'
 require 'twitter'
 require 'logger'
 require 'yaml'
-require 'mysql'
+require 'mysql2'
 
 $DEBUG = true
 
