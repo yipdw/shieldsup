@@ -40,15 +40,11 @@ if ( $ret == "AUTH_ERR" ) {
 }
 
 // figure out how to get the html form stuff... oh god. how. it's post. i don't know.
-// this is for debug and not legitimate.
+$username = $_POST["username"];
 
 print("<html><body>");
 
-print("<b>env: </b>\n");
-print_r($_ENV);
-print("\n<p></p>\n");
-print("<b>post: </b>\n");
-print_r($_POST);
+print($username);
 print("\n</body></html>\n");
 
 exit;
