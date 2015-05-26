@@ -1,12 +1,12 @@
 #!/usr/local/bin/ruby
 
-$DEBUG = true
-
 require 'socket'
 require 'pp'
 require 'twitter'
 require 'logger'
 require 'yaml'
+
+$DEBUG = true
 
 CONFIG_FILE   = File.join(File.dirname(__FILE__), '..', 'conf.yaml')
 FILE_BASENAME = File.basename(__FILE__)
