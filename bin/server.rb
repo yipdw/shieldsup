@@ -1,7 +1,6 @@
 #!/usr/local/bin/ruby
 
 require 'socket'
-require 'pp'
 require 'twitter'
 require 'logger'
 require 'yaml'
@@ -15,16 +14,6 @@ FILE_BASENAME = File.basename(__FILE__)
 $log = Logger.new(STDOUT)
 $log.level = Logger::DEBUG
 
-def wait_for_rate_limit(reset)
-	if reset > 30
-		sleep 30
-		reset = reset - 30
-		$log.debug("rate limit: #{reset} seconds remaining")
-		wait_for_rate_limit(reset)
-	elsif reset > 0
-		sleep reset + 1
-	end
-end
 
 
 # return the userinfo for the authenticated user
@@ -36,17 +25,16 @@ def get_userdata
 	rescue Twitter::Error::Unauthorized => error
 		$log.error("AUTH: Fail (Unauthorized)")
 		Thread.current['client'].puts("AUTH_ERR")
-		Thread.current['client'].close
-		Thread.exit
+		return false
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("ERR_TWITTER: Rate limited (#{error.rate_limit.reset_in})")
 		Thread.current['client'].puts("ERR_TWITTER Rate limited until #{error.rate_limit.reset_in}")
-		Thread.current['client'].close
-		Thread.exit
+		return false
 	end
 
 	userdata
 end
+
 
 
 # get the most recent tweets
@@ -57,7 +45,7 @@ def get_timeline
 		tweets = Thread.current['conn']['twitter'].user_timeline(Thread.current['conn']['user'], {count: 200, include_rts: false})
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		wait_for_rate_limit(error.rate_limit.reset_in)
+		sleep error.rate_limit.reset_in
 		retry
 	rescue Twitter::Error::NotFound => error
 		$log.warn("ERROR: user not found (#{Thread.current['conn']['user']})")
@@ -78,7 +66,7 @@ def get_follower_ids
 		follower_ids = Thread.current['conn']['twitter'].follower_ids
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		wait_for_rate_limit(error.rate_limit.reset_in)
+		sleep error.rate_limit.reset_in
 		retry
 	end
 
@@ -94,12 +82,13 @@ def get_friend_ids
 		friend_ids = Thread.current['conn']['twitter'].friend_ids
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		wait_for_rate_limit(error.rate_limit.reset_in)
+		sleep error.rate_limit.reset_in
 		retry
 	end
 
 	friend_ids
 end
+
 
 
 # connect to our db
@@ -110,6 +99,7 @@ def connect_to_db
 				:password => $config['db']['password'],
 				:database => $config['db']['database'] )
 end
+
 
 
 # check for db entry/status
@@ -125,6 +115,7 @@ def get_db_status
 end
 
 
+
 # create a new job in our database 
 # todo: add values for rt/replies/userid
 def create_db_job
@@ -134,10 +125,22 @@ def create_db_job
 end
 
 
+
+# update entry in jobs table to show as being done
 def update_db_job_done
 	m = connect_to_db
 	m.query("UPDATE jobs SET status = 'DONE' WHERE userid = '#{Thread.current['conn']['userdata'].id}'")
 end
+
+
+
+# delete an entry from the jobs table
+def remove_db_job
+	m = connect_to_db
+	m.query("DELETE from jobs WHERE userid = '#{Thread.current['conn']['userdata'].id}'")
+end
+
+
 
 # print output of file
 def get_list_command
@@ -149,17 +152,18 @@ def get_list_command
 	end
 	
 	# print file to client
-	#read_userid_file
+	read_from_file
 
 	# delete file 
-	#delete_userid_file
+	delete_file
 
 	# remove db entry
-	#remove_db_job
+	remove_db_job
 
 	# disconnect
 	Thread.current['client'].close
 end
+
 
 
 # get up to 100 userids that have retweeted a given tweetid
@@ -169,7 +173,7 @@ def get_retweeters(tweetid)
 		userids = Thread.current['conn']['twitter'].retweeters_of(tweetid, {ids_only: true})
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		wait_for_rate_limit(error.rate_limit.reset_in)
+		sleep error.rate_limit.reset_in
 		retry
 	rescue Twitter::Error::NotFound => error
 		$log.warn("ERROR: user not found (#{Thread.current['conn']['user']})")
@@ -178,6 +182,7 @@ def get_retweeters(tweetid)
 
 	userids
 end
+
 
 
 # get the most retweeted tweetids from a user
@@ -200,6 +205,15 @@ def get_top_tweets(tweets)
 
 	top
 end
+
+
+
+# delete file
+def delete_file
+	filename = File.join($config['temp_dir'], "#{Thread.current['conn']['userdata'].id}.txt")
+	File.delete(filename)
+end
+
 
 
 # write userids to temp file to be grabbed later
@@ -225,6 +239,29 @@ def write_to_file(userids)
 end
 
 
+
+# read data from temp file
+# filename = authuserid.txt
+def read_from_file
+	filename = File.join($config['temp_dir'], "#{Thread.current['conn']['userdata'].id}.txt")
+
+	# verify file exists
+	if ! File.exists?(filename)
+		$log.warn("#{filename} does not exist.")
+		# update database with some kind of error
+		return false
+	end
+
+	# read from file
+	File.open(filename, "r") do |f|
+		f.each_line do |line|
+			Thread.current['client'].puts(line)
+		end
+	end
+end
+
+
+
 # thread function for starting to kick off crap to twitter.
 def go_thread 
 	userids = Array.new
@@ -232,14 +269,14 @@ def go_thread
 	# create db entry
 	create_db_job
 
-	# todo: verify rt or reply is set to true
+	# todo: verify rt or reply is set to true - must have at least one set 
 
 	# pull down latest 200 tweets from user
 	tweets = get_timeline
 
 	# unrecoverable error
 	if ! tweets 
-		#todo: set_db_error
+		# todo: set an error state in the db of some sort
 		return
 	end
 
@@ -247,13 +284,14 @@ def go_thread
 	top_tweets = get_top_tweets(tweets)
 
 	# pull down retweet ids from top tweets
+	# todo: turn this into hash, not array
 	top_tweets.each do | tweetid |
 		# pops these ids into the userids array, removes dupes
 		userids = userids|get_retweeters(tweetid)
 	end
 	
-	# todo: if reply, search API for username, get latest results (what is limit?)
-	# todo: looks like appropriate call is mentions_timeline - can pull down 800 tweets
+	# todo: if reply is set, search API for username, get latest results (what is limit?)
+	# looks like appropriate call is mentions_timeline - can pull down 800 tweets
 
 	# todo: pull down friends list and compare
 	# start with get_friend_ids function (above)
@@ -269,7 +307,9 @@ def go_thread
 end
 
 
+
 # kick off a thread for API requests to twitter
+# todo: check to see if a job is in DONE state - we shouldn't be accepting new requests.
 def go_command
 	# copy our connection data out to a new variable
 	conn = Thread.current['conn']
@@ -282,31 +322,35 @@ def go_command
 end
 
 
+
 # decide what to do based upon the command given
 # return: false on error/exit, command after execution
 def parse_command(command)
 	case command
 	when /^user (.*)$/
 		Thread.current['conn']['user'] = $1
+		return true 
 	when /^rt (.*)$/
 		Thread.current['conn']['rt'] = $1
+		return true 
 	when /^reply (.*)$/
 		Thread.current['conn']['reply'] = $1
+		return true
 	when "go"
 		go_command
-		return false
 	when "get_list"
 		get_list_command
 	when "exit"
-		return false
 	else
 		$log.error("[#{Thread.current['conn']['userdata'].id}] ERR_OTHER: Command #{command} unknown")
-		Thread.current['client'].puts("ERR_OTHER: Unknown command when talking to backend")
-		Thread.exit
+		Thread.current['client'].puts("ERR_OTHER Unknown command when talking to backend")
 	end
 
-	return command
+	# already returned true for things that require more input
+	# this seems less than intuitive, though.
+	false	
 end
+
 
 
 # get a line from the client, downcase and remove trailing whitespace
@@ -323,17 +367,20 @@ def get_command
 end
 
 
+
 # authenticate to twitter
 # return: twitter client object 
-
 def twitter_auth
 	$log.debug("Authenticating")
 
 	# get auth info from client
+	# app auth - don't bother saving this into globals
 	consumer_key = Thread.current['client'].gets.chop
 	$log.debug("consumer_key: #{consumer_key}")
 	consumer_secret = Thread.current['client'].gets.chop
 	$log.debug("consumer_secret: #{consumer_secret}")
+
+	# user tokens should be saved as thread variables
 	Thread.current['conn']['oauth_token'] = Thread.current['client'].gets.chop
 	$log.debug("access_token: #{Thread.current['conn']['oauth_token']}")
 	Thread.current['conn']['oauth_secret'] = Thread.current['client'].gets.chop
@@ -359,6 +406,7 @@ def twitter_auth
 end
 
 
+
 # simple function just to see if job is currently running.
 # returns: true if running, false if not.
 def is_job_running
@@ -380,6 +428,13 @@ def handle_client
 
 	# get userdata for authed account
 	Thread.current['conn']['userdata'] = get_userdata
+
+	# if this isn't set, something went wrong. we've already returned the error code.
+	if Thread.current['conn']['userdata'] == false
+		Thread.current['client'].close
+		return
+	end
+
 	$log.info("[#{Thread.current['conn']['userdata'].id}] AUTH: Success")
 
 	# query database to get status of possible existing job 
@@ -392,30 +447,35 @@ def handle_client
 
 	while true
 		command = get_command
+		# return if command is empty
 		break unless command
-
-		ret = parse_command(command)
-		break unless ret 
+		# return if parse_command is false
+		break unless parse_command(command) 
 	end
 
 	$log.info("Closing connection")
 	Thread.current['client'].close
 end
 
+
+
+# main program loop
 def main
 	# read our config
 	$config = YAML.load_file(CONFIG_FILE)
 
+	# not strictly necessary, but for the purpose of making this more readable.
+	socket_file = File.join($config['base_dir'], $config['socket_file'])
 
 	# start server
-	if File.exists?(File.join($config['base_dir'], $config['socket_file']))
-		$log.warn("#{$config[:sock]} already exists, removing.")
-		File.delete(File.join($config['base_dir'], $config['socket_file']))
+	if File.exists?(socket_file)
+		$log.warn("#{$config['socket_file']} already exists, removing.")
+		File.delete(socket_file)
 	end
 
-	server = UNIXServer.new(File.join($config['base_dir'], $config['socket_file']))
+	server = UNIXServer.new(socket_file)
 
-	while true	# loop forever
+	while true
 		client = server.accept
 
 		Thread.start(client) do |c|
