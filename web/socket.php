@@ -37,7 +37,7 @@ table#t_list td {
 	padding: 4px;
 	text-align: left;
 	font-size: 0.8em;
-	// font-family: "Lucida Console", Monaco, monospace; 
+	// font-family: "Lucida Console", Monaco, monospace;
 }
 
 table#t_list tr:nth-child(even) {
@@ -70,7 +70,7 @@ if ($errno) {
 	exit;
 }
 
-// pretty much everything beneath this line needs to be changed. 
+// pretty much everything beneath this line needs to be changed.
 // put in some intro comments about how things will go down.
 
 fwrite($sock, "$app_key\n");
