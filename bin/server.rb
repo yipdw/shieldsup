@@ -159,9 +159,6 @@ def get_list_command
 
 	# remove db entry
 	remove_db_job
-
-	# disconnect
-	Thread.current['client'].close
 end
 
 
@@ -431,7 +428,7 @@ def handle_client
 	# check credentials - if busted, exit.
 	if twitter_auth == false
 		Thread.current['client'].close
-		Thread.exit
+		return
 	end
 
 	# get userdata for authed account
