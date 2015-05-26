@@ -314,6 +314,10 @@ end
 # kick off a thread for API requests to twitter
 # todo: check to see if a job is in DONE state - we shouldn't be accepting new requests.
 def go_command
+	# see if a job is already running. cheap and easy way of doing it.
+	# should probably be more graceful about it
+	return if status_command
+
 	# copy our connection data out to a new variable
 	conn = Thread.current['conn']
 
@@ -339,6 +343,8 @@ def parse_command(command)
 	when /^reply (.*)$/
 		Thread.current['conn']['reply'] = $1
 		return true
+	when "status"
+		status_command
 	when "go"
 		go_command
 	when "get_list"
@@ -354,6 +360,25 @@ def parse_command(command)
 	false	
 end
 
+
+
+# see if a job is running or done
+# returns: true if job found, false if not
+# todo: error handling
+def status_command
+	# query database to get status of possible existing job 
+	if is_job_running
+		$log.info("[#{Thread.current['conn']['userdata'].id}] WAIT")
+		Thread.current['client'].puts("WAIT")
+		return true
+	elsif is_job_done
+		$log.info("[#{Thread.current['conn']['userdata'].id}] DONE")
+		Thread.current['client'].puts("DONE")
+		return true
+	end
+
+	false
+end
 
 
 # get a line from the client, downcase and remove trailing whitespace
@@ -447,14 +472,6 @@ def handle_client
 	end
 
 	$log.info("[#{Thread.current['conn']['userdata'].id}] AUTH: Success")
-
-	# query database to get status of possible existing job 
-	if is_job_running
-		$log.info("[#{Thread.current['conn']['userdata'].id}] WAIT")
-		Thread.current['client'].puts("WAIT")
-		Thread.current['client'].close
-		Thread.exit
-	end
 
 	while true
 		command = get_command
