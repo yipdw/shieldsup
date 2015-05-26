@@ -15,17 +15,21 @@ FILE_BASENAME = File.basename(__FILE__)
 $log = Logger.new(STDOUT)
 $log.level = Logger::DEBUG
 
-def wait_for_rate_limit(c, reset)
+def wait_for_rate_limit(reset)
 	if reset > 30
 		sleep 30
 		reset = reset - 30
 		$log.debug("rate limit: #{reset} seconds remaining")
-		wait_for_rate_limit(c, reset)
+		wait_for_rate_limit(reset)
 	elsif reset > 0
 		sleep reset + 1
 	end
 end
 
+
+# return the userinfo for the authenticated user
+# this is how we verify that our credential are good
+# returns: userdata
 def get_userdata
 	begin
 		userdata = Thread.current['conn']['twitter'].verify_credentials
@@ -45,90 +49,57 @@ def get_userdata
 end
 
 
-###### old stuff
-###### salvagable 
-def is_blocked_followers(c)
-	$block_ids = read_blockfile
+# get the most recent tweets
+def get_timeline
+	$log.warn("get timeline")
+
 	begin
-		follower_ids = $config[:twitter].follower_ids
+		tweets = Thread.current['conn']['twitter'].user_timeline(Thread.current['conn']['user'], {count: 200, include_rts: false})
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		c.puts("WAIT=#{error.rate_limit.reset_in}")
-		wait_for_rate_limit(c, error.rate_limit.reset_in)
+		wait_for_rate_limit(error.rate_limit.reset_in)
+		retry
+	rescue Twitter::Error::NotFound => error
+		$log.warn("ERROR: user not found (#{Thread.current['conn']['user']})")
+		return false
+	end
+
+	$log.warn("finished timeline")
+
+	return tweets
+end
+
+
+
+### old code, clean up
+### todo: more generic error checking
+def get_follower_ids 
+	begin
+		follower_ids = Thread.current['conn']['twitter'].follower_ids
+	rescue Twitter::Error::TooManyRequests => error
+		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
+		wait_for_rate_limit(error.rate_limit.reset_in)
 		retry
 	end
 
-	# how can i make this not so garbage?
-	follower_ids_clean = Array.new
-	follower_ids.each do |f|
-		follower_ids_clean << f
-	end
-
-	$log.debug("followers: #{follower_ids_clean.count}")
-
-	# reverse of what we want
-	not_follower = $block_ids - follower_ids_clean
-
-	# this should be the users we're firends with that are on the block list
-	blocked_follower_ids = $block_ids - not_follower
-
-	$log.debug("followers on blocklist: #{blocked_follower_ids.count}")
-	c.puts("BLOCKED_FOLLOWER_COUNT=#{blocked_follower_ids.count}")
-
-	if blocked_follower_ids.count > 0
-		$log.debug("followers on blocklist: #{blocked_follower_ids * ','}")
-
-		followers = get_users(c, blocked_follower_ids)
-
-		followers.each do |user|
-			$log.debug("follower: #{user.screen_name} [#{user.id}]")
-			c.puts("BLOCKED_FOLLOWER=#{user.id}:#{user.screen_name}")	
-		end
-	end
+	follower_ids
 end
 
-def is_blocked_friends(c)
-	$block_ids = read_blockfile
+
+
+### old code, clean up
+### todo: more generic error checking
+def get_friend_ids
 	begin
-		friend_ids = $config[:twitter].friend_ids
+		friend_ids = Thread.current['conn']['twitter'].friend_ids
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
-		c.puts("WAIT=#{error.rate_limit.reset_in}")
-		wait_for_rate_limit(c, error.rate_limit.reset_in)
+		wait_for_rate_limit(error.rate_limit.reset_in)
 		retry
 	end
 
-	return unless friend_ids
-
-	# how can i make this not so garbage?
-	friend_ids_clean = Array.new
-	friend_ids.each do |f|
-		friend_ids_clean << f
-	end
-
-	$log.debug("friends: #{friend_ids_clean.count}")
-
-	# reverse of what we want
-	not_friends = $block_ids - friend_ids_clean
-
-	# this should be the users we're firends with that are on the block list
-	blocked_friend_ids = $block_ids - not_friends
-
-	$log.debug("friends on blocklist: #{blocked_friend_ids.count}")
-	c.puts("BLOCKED_FRIEND_COUNT=#{blocked_friend_ids.count}")
-
-	if blocked_friend_ids.count > 0
-		$log.debug("friends on blocklist: #{blocked_friend_ids * ','}")
-
-		friends = get_users(c, blocked_friend_ids)
-
-		friends.each do |user|
-			$log.debug("friend: #{user.screen_name} [#{user.id}]")
-			c.puts("BLOCKED_FRIEND=#{user.id}:#{user.screen_name}")	
-		end
-	end
+	friend_ids
 end
-###### end old stuff
 
 
 # connect to our db
@@ -166,41 +137,109 @@ end
 # print output of file
 def get_list_command
 	# check db entry to verify status = done
-	status = get_db_status
-
+	if is_job_done == false 
+		# job is not in done state 
+		# todo: error message here
+		Thread.exit
+	end
+	
 	# print file to client
+	#read_userid_file
 
 	# delete file 
+	#delete_userid_file
 
 	# remove db entry
+	#remove_db_job
 
 	# disconnect
+	Thread.current['client'].close
+end
+
+
+# get up to 100 userids that have retweeted a given tweetid
+# returns: array of userids
+def get_retweeters(tweetid)
+	begin
+		userids = Thread.current['conn']['twitter'].retweeters_of(tweetid, {ids_only: true})
+	rescue Twitter::Error::TooManyRequests => error
+		$log.warn("AUTH: Rate limited (#{error.rate_limit.reset_in})")
+		wait_for_rate_limit(error.rate_limit.reset_in)
+		retry
+	rescue Twitter::Error::NotFound => error
+		$log.warn("ERROR: user not found (#{Thread.current['conn']['user']})")
+		return false
+	end
+
+	userids
+end
+
+
+# get the most retweeted tweetids from a user
+# returns: array of tweet ids
+def get_top_tweets(tweets)
+	metadata = {}
+	top = Array.new
+
+	# create a new data structure with the retweet count
+	tweets.each do | tweet |
+		metadata[tweet.id] = tweet.retweet_count
+	end
+
+	# there's a better way to do this. but i'm tired and don't care.
+	# sort the data structure we just created, take the top 12, and shove
+	# the tweet id into a new array that we return at the end.
+	metadata.sort_by{ | k, v| v }.reverse.take(12).each do |t|
+		top << t[0]
+	end
+
+	top
 end
 
 
 # thread function for starting to kick off crap to twitter.
 def go_thread 
+	userids = Array.new
+
 	# create db entry
 	create_db_job
 
-	# verify rt or reply is set to true
-
-	# verify user exists
+	# todo: verify rt or reply is set to true
 
 	# pull down latest 200 tweets from user
+	tweets = get_timeline
 
-	# if rt, get top 12 tweets
+	# unrecoverable error
+	if ! tweets 
+		#todo: set_db_error
+		return
+	end
 
-	# if reply, search API for username, get latest results (what is limit?)
+	# get top tweet ids
+	top_tweets = get_top_tweets(tweets)
+
+	# pull down retweet ids from top tweets
+	top_tweets.each do | tweetid |
+		# pops these ids into the userids array, removes dupes
+		userids = userids|get_retweeters(tweetid)
+	end
+	
+	# todo: if reply, search API for username, get latest results (what is limit?)
+	# todo: looks like appropriate call is mentions_timeline - can pull down 800 tweets
+
+	# todo: pull down friends list and compare
+	# start with get_friend_ids function (above)
+
+	# todo: pull down followers list and compare
+	# start with get_follower_ids function (above)
 
 	# create temp file
 	# filename = authuserid.txt
 	# delete file if exists
+	#write_to_file(userids)
 
 	# change db status to done
-
-	# exit thread	
-	Thread.exit
+	#update_db_done
 end
 
 
@@ -215,7 +254,7 @@ def go_command
 		go_thread	
 	end
 
-	Thread.exit
+	#Thread.exit
 end
 
 
@@ -231,10 +270,11 @@ def parse_command(command)
 		Thread.current['conn']['reply'] = $1
 	when "go"
 		go_command
+		return false
 	when "get_list"
 		get_list_command
 	when "exit"
-		Thread.exit
+		return false
 	else
 		$log.error("[#{Thread.current['conn']['userdata'].id}] ERR_OTHER: Command #{command} unknown")
 		Thread.current['client'].puts("ERR_OTHER: Unknown command when talking to backend")
@@ -243,6 +283,7 @@ def parse_command(command)
 
 	return command
 end
+
 
 # get a line from the client, downcase and remove trailing whitespace
 # return: command
