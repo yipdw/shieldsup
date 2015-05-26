@@ -5,3 +5,14 @@ create table tokens (
     oauth_secret text,
     accessed timestamp,
     added timestamp );
+
+create table jobs (
+    id int unsigned not null auto_increment primary key,
+    userid bigint not null,
+    target_userid bigint,
+    target_username varchar(24),
+    opt_rt boolean default 1,
+    opt_reply boolean default 0,
+    updated timestamp,
+    added timestamp, 
+    status varchar(10) );
