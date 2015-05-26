@@ -134,6 +134,11 @@ def create_db_job
 end
 
 
+def update_db_job_done
+	m = connect_to_db
+	m.query("UPDATE jobs SET status = 'DONE' WHERE userid = '#{Thread.current['conn']['userdata'].id}'")
+end
+
 # print output of file
 def get_list_command
 	# check db entry to verify status = done
@@ -197,6 +202,29 @@ def get_top_tweets(tweets)
 end
 
 
+# write userids to temp file to be grabbed later
+# filename = authuserid.txt
+def write_to_file(userids)
+	# todo: check when prog first runs to see if temp_dir is set/exists
+	filename = File.join($config['temp_dir'], "#{Thread.current['conn']['userdata'].id}.txt")
+
+	# delete file if exists
+	if File.exists?(filename)
+		$log.warn("#{filename} already exists, removing.")
+		File.delete(filename)
+	end
+
+	# write to file
+	# todo: this should be a hash, not an array
+	# syntax: userid username isfriend isfollower
+	File.open(filename, "w+") do |f|
+		userids.each do |id|
+			f.puts("#{id} null 0 0")
+		end
+	end
+end
+
+
 # thread function for starting to kick off crap to twitter.
 def go_thread 
 	userids = Array.new
@@ -234,12 +262,10 @@ def go_thread
 	# start with get_follower_ids function (above)
 
 	# create temp file
-	# filename = authuserid.txt
-	# delete file if exists
-	#write_to_file(userids)
+	write_to_file(userids)
 
 	# change db status to done
-	#update_db_done
+	update_db_job_done
 end
 
 
@@ -253,8 +279,6 @@ def go_command
 		Thread.current['conn'] = conn
 		go_thread	
 	end
-
-	#Thread.exit
 end
 
 
