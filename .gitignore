@@ -3,7 +3,6 @@ conf.yaml
 *.swp
 *.swo
 Gemfile.lock
-doc/*
 log/*
 pkg/*
 tmp/*
