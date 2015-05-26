@@ -30,7 +30,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 	} else {
 		// Let's find the user by its ID
 		// todo: error checking?! sanitize.
-		$query = mysql_query("SELECT * FROM tokens WHERE oauth_uid = ". $user_info->id);
+		$query = mysql_query("SELECT * FROM tokens WHERE userid = ". $user_info->id);
 		$result = mysql_fetch_array($query);
  
 		// If not, let's add it to the database
@@ -41,12 +41,11 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 			$result = mysql_fetch_array($query);
 		} else {
 			// Update the tokens
-			$query = mysql_query("UPDATE tokens SET oauth_token = '{$access_token['oauth_token']}', oauth_secret = '{$access_token['oauth_token_secret']}', accessed = NOW() WHERE oauth_uid = {$user_info->id}");
+			$query = mysql_query("UPDATE tokens SET oauth_token = '{$access_token['oauth_token']}', oauth_secret = '{$access_token['oauth_token_secret']}', accessed = NOW() WHERE userid = {$user_info->id}");
 		}
  
 		$_SESSION['id'] = $result['id'];
-		$_SESSION['oauth_uid'] = $result['oauth_uid'];
-		$_SESSION['oauth_provider'] = $result['oauth_provider'];
+		$_SESSION['oauth_uid'] = $result['userid']
 		$_SESSION['oauth_token'] = $result['oauth_token'];
 		$_SESSION['oauth_secret'] = $result['oauth_secret'];
  
