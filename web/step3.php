@@ -1,5 +1,4 @@
 <?php
-// basically a garbage file - some logic is good to use, but this was pulled from a diff project.
 require('conf.php');
 require('lib.php');
 
