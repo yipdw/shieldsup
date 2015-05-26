@@ -68,9 +68,6 @@ if ( $ret == "AUTH_ERR" ) {
 <tr>
 <td>Twitter username:</td>
 <td><input type="text" name="username"></td>
-</tr>
-<tr>
-<td></td>
 <td><input type="submit" value="Submit"></td>
 </tr>
 </table>
