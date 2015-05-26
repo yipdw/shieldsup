@@ -70,12 +70,19 @@ if ($errno) {
 	exit;
 }
 
+// pretty much everything beneath this line needs to be changed. 
+// put in some intro comments about how things will go down.
+
 fwrite($sock, "$app_key\n");
 fwrite($sock, "$app_secret\n");
 fwrite($sock, $_SESSION['oauth_token']."\n");
 fwrite($sock, $_SESSION['oauth_secret']."\n");
-
 $ret = chop(fgets($sock));
+
+// CHANGEME
+// won't be necessary to check for rate limiting. 
+// instead, we'll be doing a refresh every 10s until we get an OK.
+// our backend will be monitoring for rate limiting and returning an OK/WAIT code as needed.
 if ( $ret != "OK" ) {
 	print("Uh, oh. I didn't write an exception for this yet, it's probably rate limiting: <strong>$ret</strong>!<br />\n");
 	print("If you're getting this error this early on, you should stop repeatedly hitting the refresh button.\n");
@@ -86,7 +93,8 @@ if ( $ret != "OK" ) {
 <table><tr>
 <td>blocked</td>
 <?php
-// am i blocked?
+// alllll of this logic needs to be changed to fit what shields up actually does.
+// change protocol, change output.
 fwrite($sock, 'blocked?'."\n");
 $ret = chop(fgets($sock));
 
@@ -110,116 +118,6 @@ if ( $ret != "OK" ) {
 }
 
 ?>
-</tr>
-<tr><td>friends</td>
-<?php
-// are my friends blocked?
-fwrite($sock, 'friends?'."\n");
-$found = 0;
-while (true) {
-	$ret = chop(fgets($sock));
 
-	if (preg_match_all("/^BLOCKED_FRIEND_COUNT=(\d+)/", $ret, $matches_out)) {
-		$friends_count=$matches_out[1][0];
-		if ($friends_count == 0) {
-			print("<td style='background-color: #00CC00'>OK</td></tr>\n");
-		} elseif ($friends_count > 0) {
-			$found = 1;
-			print("<td style='background-color: #CC0000'>$friends_count FOUND</td></tr>\n");
-			print("<tr><td style='padding=0px;' colspan=\"2\"><center><table id=\"t_list\">");
-		}
-		else {
-			print("<td style='background-color: #FF6600'>ERROR</td></tr></table>\n");
-			exit;
-		}
-		break;
-	}
-	elseif (preg_match_all("/^WAIT=(\d+)/", $ret, $matches_out)) {
-		print("<td style='background-color: #FF6600'>RATE LIMITED (".$matches_out[1][0].")</td>\n");
-		print("</tr></table>");
-		exit;
-		// sleep($matches_out[1][0]);
-	}
-}
-	
-while (true) {
-	$ret = chop(fgets($sock));
-
-	if ( $ret == "OK" ) {
-		// print("</table>\n");
-		if ( $found == 1 ) {
-			print("</table></center></td>\n</tr>\n");
-		}
-		break;
-	}
-
-	if (preg_match_all("/^BLOCKED_FRIEND=(\d+):(\S+)/", $ret, $matches_out)) {
-		$user_id = $matches_out[1][0];
-		$screen_name = $matches_out[2][0];
-
-		print("<tr><td><a href=\"https://twitter.com/$screen_name\">$screen_name</a></td></tr>\n");
-	}
-	elseif (preg_match_all("/^WAIT=(\d+)/", $ret, $matches_out)) {
-		print("<tr><td style='background-color: #FF6600'>RATE LIMITED (".$matches_out[1][0].")</td></tr></table>\n</td></tr></table>\n");
-		exit;
-		// sleep($matches_out[1][0]);
-	}
-}
-?>
-
-<tr><td>followers</td>
-<?php
-// are my followers blocked?
-fwrite($sock, 'followers?'."\n");
-$found = 0;
-while (true) {
-	$ret = chop(fgets($sock));
-
-	if (preg_match_all("/^BLOCKED_FOLLOWER_COUNT=(\d+)/", $ret, $matches_out)) {
-		$followers_count=$matches_out[1][0];
-		if ($followers_count == 0) {
-			print("<td style='background-color: #00CC00'>OK</td></tr>\n");
-		} elseif ($followers_count > 0) {
-			$found = 1;
-			print("<td style='background-color: #CC0000'>$followers_count FOUND</td></tr>\n");
-			print("<tr><td style='padding=0px;' colspan=\"2\"><center><table id=\"t_list\">");
-		} else {
-			print("<td style='background-color: #FF6600'>ERROR</td></tr></table>\n");
-			exit;
-		}
-		break;
-	}
-	elseif (preg_match_all("/^WAIT=(\d+)/", $ret, $matches_out)) {
-		print("<td style='background-color: #FF6600'>RATE LIMITED (".$matches_out[1][0].")</td>\n");
-		print("</tr></table>");
-		exit;
-		// sleep($matches_out[1][0]);
-	}
-}
-
-while (true) {
-	$ret = chop(fgets($sock));
-
-	if ( $ret == "OK" ) {
-		if ( $found == 1 ) {
-			print("</table></center></td>\n</tr>\n");
-		}
-		break;
-	}
-
-	if (preg_match_all("/^BLOCKED_FOLLOWER=(\d+):(\S+)/", $ret, $matches_out)) {
-		$user_id = $matches_out[1][0];
-		$screen_name = $matches_out[2][0];
-
-		print("<tr><td><a href=\"https://twitter.com/$screen_name\">$screen_name</a></td></tr>\n");
-	}
-	elseif (preg_match_all("/^WAIT=(\d+)/", $ret, $matches_out)) {
-		print("<tr><td style='background-color: #FF6600'>RATE LIMITED (".$matches_out[1][0].")</td></tr></table></td></tr></table>\n");
-		exit;
-		// sleep($matches_out[1][0]);
-	}
-} 
-
-?>
-
-</table>
+</tr></table>
+</body></html>
