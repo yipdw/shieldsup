@@ -5,6 +5,7 @@ require 'pp'
 require 'twitter'
 require 'logger'
 require 'yaml'
+require 'mysql'
 
 $DEBUG = true
 
@@ -129,9 +130,35 @@ def is_blocked_friends(c)
 end
 ###### end old stuff
 
+
+# connect to our db
+# return: db object
+def connect_to_db
+	Mysql2::Client.new(	:host => $config['db']['host'],
+				:username => $config['db']['username'],
+				:password => $config['db']['password'],
+				:database => $config['db']['database'] )
+end
+
+
+# check for db entry/status
+# return: row or false if not found
+def get_db_status
+	m = connect_to_db
+
+	escaped = client.escape(Thread.current['conn']['userdata'].id)
+	m.query("SELECT status FROM jobs WHERE userid = '#{escaped}'").each do |row|
+		return row
+	end
+
+	return false
+end
+
+
 # print output of file
 def get_list_command
 	# check db entry to verify status = done
+	status = get_db_status
 
 	# print file to client
 
