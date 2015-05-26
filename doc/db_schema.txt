@@ -1,0 +1,7 @@
+create table tokens (
+    id int unsigned not null auto_increment primary key,
+    userid bigint not null,              
+    oauth_token text,         
+    oauth_secret text,
+    added timestamp,             
+    accessed timestamp );
