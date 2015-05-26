@@ -61,7 +61,7 @@ while (true) {
 	$ret = chop(fgets($sock));
 
 	// keep getting ret until we find END_LIST
-	if ( $ret == "END_LIST" )
+	if ( $ret == "END_LIST" ) {
 		break;
 	}
 
