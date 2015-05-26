@@ -1,6 +1,7 @@
 <?php
 
-include('conf.php');
+require('conf.php');
+require('lib.php');
 
 session_start();
 
@@ -64,31 +65,31 @@ td {
 <?php
 $sock = stream_socket_client("unix://$socket_file", $errno, $errstr);
 
+// todo: make this error message prettier?
+
 if ($errno) {
 	print("something is wrong: <strong>$errstr!</strong><br />\n");
 	print("the backend server probably isn't running. kick it.\n");
 	exit;
 }
 
-// pretty much everything beneath this line needs to be changed.
-// put in some intro comments about how things will go down.
+// create a connection to our backend server
+$ret = login_to_backend(	$sock,
+				$app_key,
+				$app_secret,
+				$_SESSION['oauth_token'],
+				$_SESSION('oauth_token_secret'] );
 
-fwrite($sock, "$app_key\n");
-fwrite($sock, "$app_secret\n");
-fwrite($sock, $_SESSION['oauth_token']."\n");
-fwrite($sock, $_SESSION['oauth_token_secret']."\n");
-$ret = chop(fgets($sock));
-
-// CHANGEME
-// won't be necessary to check for rate limiting. 
-// instead, we'll be doing a refresh every 10s until we get an OK.
-// our backend will be monitoring for rate limiting and returning an OK/WAIT code as needed.
-if ( $ret != "OK" ) {
-	print("Uh, oh. I didn't write an exception for this yet, it's probably rate limiting: <strong>$ret</strong>!<br />\n");
-	print("If you're getting this error this early on, you should stop repeatedly hitting the refresh button.\n");
+// todo: put in a link to the webpage. we should add that to the conf file.
+if ( $ret == "AUTH_ERR" ) {
+	print("There seems to be a problem logging you in to twitter. ");
+	print("Try hitting back in your browser to restart the process.\n");
+	print("</body></html>");
 	exit;
 }
 
+// pretty much everything beneath this line needs to be changed.
+// put in some intro comments about how things will go down.
 ?>
 <table><tr>
 <td>blocked</td>
