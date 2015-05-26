@@ -49,7 +49,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 		$_SESSION['oauth_token'] = $result['oauth_token'];
 		$_SESSION['oauth_token_secret'] = $result['oauth_secret'];
  
-		header('Location: socket.php');
+		header('Location: step1.php');
 	}
 } else {
     // Something's missing, go back to square 1
