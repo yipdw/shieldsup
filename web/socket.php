@@ -78,7 +78,7 @@ $ret = login_to_backend(	$sock,
 				$app_key,
 				$app_secret,
 				$_SESSION['oauth_token'],
-				$_SESSION('oauth_token_secret'] );
+				$_SESSION['oauth_token_secret'] );
 
 // todo: put in a link to the webpage. we should add that to the conf file.
 if ( $ret == "AUTH_ERR" ) {
