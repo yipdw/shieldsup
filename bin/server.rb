@@ -9,7 +9,6 @@ require 'mysql2'
 $DEBUG = true
 
 CONFIG_FILE   = File.join(File.dirname(__FILE__), '..', 'conf.yaml')
-FILE_BASENAME = File.basename(__FILE__)
 
 $log = Logger.new(STDOUT)
 $log.level = Logger::DEBUG
@@ -166,6 +165,11 @@ end
 # get up to 100 userids that have retweeted a given tweetid
 # returns: array of userids
 def get_retweeters(tweetid)
+	# todo: drop ids_only so it returns the full userdata
+	# we should parse this userdata for the username.
+	# we can also save ourselves some api calls later by checking to see if
+	# we're following that user here.
+	# this means we won't be returning a simple array, but an array of hashes
 	begin
 		userids = Thread.current['conn']['twitter'].retweeters_of(tweetid, {ids_only: true})
 	rescue Twitter::Error::TooManyRequests => error
@@ -295,6 +299,8 @@ def go_thread
 
 	# todo: pull down followers list and compare
 	# start with get_follower_ids function (above)
+	# if we pull down full userdata instead of just ids in our previous requests,
+	# we can skip this step and save ourselves some api calls.
 
 	# create temp file
 	write_to_file(userids)
