@@ -33,12 +33,12 @@ def get_userdata
 		$log.error("AUTH: Fail (Unauthorized)")
 		Thread.current['client'].puts("AUTH_ERR")
 		Thread.current['client'].close
-		exit
+		Thread.exit
 	rescue Twitter::Error::TooManyRequests => error
 		$log.warn("ERR_TWITTER: Rate limited (#{error.rate_limit.reset_in})")
 		Thread.current['client'].puts("ERR_TWITTER Rate limited until #{error.rate_limit.reset_in}")
 		Thread.current['client'].close
-		exit
+		Thread.exit
 	end
 
 	userdata
@@ -146,12 +146,20 @@ end
 def get_db_status
 	m = connect_to_db
 
-	escaped = client.escape(Thread.current['conn']['userdata'].id)
-	m.query("SELECT status FROM jobs WHERE userid = '#{escaped}'").each do |row|
-		return row
+	m.query("SELECT status FROM jobs WHERE userid = '#{Thread.current['conn']['userdata'].id}'").each do |row|
+		return row['status']
 	end
 
 	return false
+end
+
+
+# create a new job in our database 
+# todo: add values for rt/replies/userid
+def create_db_job
+	m = connect_to_db
+	username = m.escape(Thread.current['conn']['user'])
+	m.query("INSERT INTO jobs (userid, target_username, added, status) VALUES ('#{Thread.current['conn']['userdata'].id}', '#{username}', NOW(), 'RUNNING' )")
 end
 
 
@@ -173,6 +181,7 @@ end
 # thread function for starting to kick off crap to twitter.
 def go_thread 
 	# create db entry
+	create_db_job
 
 	# verify rt or reply is set to true
 
@@ -191,6 +200,7 @@ def go_thread
 	# change db status to done
 
 	# exit thread	
+	Thread.exit
 end
 
 
@@ -204,6 +214,8 @@ def go_command
 		Thread.current['conn'] = conn
 		go_thread	
 	end
+
+	Thread.exit
 end
 
 
@@ -219,16 +231,14 @@ def parse_command(command)
 		Thread.current['conn']['reply'] = $1
 	when "go"
 		go_command
-		return false
 	when "get_list"
 		get_list_command
-		return false
 	when "exit"
-		return false
+		Thread.exit
 	else
 		$log.error("[#{Thread.current['conn']['userdata'].id}] ERR_OTHER: Command #{command} unknown")
 		Thread.current['client'].puts("ERR_OTHER: Unknown command when talking to backend")
-		return false
+		Thread.exit
 	end
 
 	return command
@@ -284,20 +294,41 @@ def twitter_auth
 end
 
 
+# simple function just to see if job is currently running.
+# returns: true if running, false if not.
+def is_job_running
+	if get_db_status =~ /^RUNNING$/
+		true
+	else
+		false
+	end
+end
+
+
+
+# main thread function for incoming connections
 def handle_client
 	$log.info("New connection")
 
-	# get auth keys for every connection
+	# verify auth keys for every connection
+	# check credentials - if busted, exit.
 	if twitter_auth == false
 		Thread.current['client'].close
-		return
+		Thread.exit
 	end
 
 	# get userdata for authed account
 	Thread.current['conn']['userdata'] = get_userdata
 	$log.info("[#{Thread.current['conn']['userdata'].id}] AUTH: Success")
 
-	# todo: query database to get status of possible existing job 
+	# query database to get status of possible existing job 
+	if is_job_running
+		$log.info("[#{Thread.current['conn']['userdata'].id}] WAIT")
+		Thread.current['client'].puts("WAIT")
+		Thread.current['client'].close
+		Thread.exit
+	end
+
 	while true
 		command = get_command
 		break unless command
