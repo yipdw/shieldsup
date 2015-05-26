@@ -39,41 +39,27 @@ if ( $ret == "AUTH_ERR" ) {
 	exit;
 }
 
-// figure out how to get the html form stuff... oh god. how. it's post. i don't know.
+// get username from POST data
 $username = $_POST["username"];
 
-print("<html><body>");
-
-print($username);
-print("\n</body></html>\n");
-
-exit;
-
-// alllll of this logic needs to be changed to fit what shields up actually does.
-// change protocol, change output.
-fwrite($sock, 'blocked?'."\n");
-$ret = chop(fgets($sock));
-
-if (preg_match_all("/^BLOCK=(\d+)/", $ret, $matches_out)) {
-	if ($matches_out[1][0] == 0) {
-		print("<td style='background-color: #00CC00'>OK</td>\n");
-	}
-	elseif ($matches_out[1][0] == 1) {
-		print("<td style='background-color: #CC0000'>BLOCKED</td>\n");
-	}
-	else {
-		print("<td style='background-color: #FF6600'>ERROR</td>\n");
-	}
-} 
-
-$ret = chop(fgets($sock));
-if ( $ret != "OK" ) {
-	print("</tr></table>\n");
-	print("something is wrong in a really weird place. what are you doing? error: <strong>$ret</strong>\n");
+// verify username is actually set. redirect if not.
+// i remember php did weird stuff with variables being set vs false or something
+// hopefully strlen is a safe way to do this and won't barf?
+if (strlen($username) < 1) {
+	header('Location: twitter_login.php');
 	exit;
 }
 
-?>
+// send username to backend
+fwrite($sock, 'USER '.$username."\n");
 
-</tr></table>
-</body></html>
+// these variables should be grabbed from post at a later date.
+// for now, use these defaults.
+fwrite($sock, "RT 1\n");
+fwrite($sock, "REPLY 0\n");
+
+// kick off the backend processing
+fwrite($sock, "GO\n");
+
+// redirect to step3.php, which is our refresh loop
+header('Location: step3.php');
