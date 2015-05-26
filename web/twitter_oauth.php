@@ -47,7 +47,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 		$_SESSION['id'] = $result['id'];
 		$_SESSION['oauth_uid'] = $result['userid'];
 		$_SESSION['oauth_token'] = $result['oauth_token'];
-		$_SESSION['oauth_secret'] = $result['oauth_secret'];
+		$_SESSION['oauth_token_secret'] = $result['oauth_secret'];
  
 		header('Location: socket.php');
 	}

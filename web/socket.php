@@ -5,8 +5,8 @@ include('conf.php');
 session_start();
 
 // User is not logged in, redirect
-if(empty($_SESSION['username'])){
-	header('Location: twitter_update.php');
+if(empty($_SESSION['oauth_uid'])){
+	header('Location: twitter_login.php');
 	exit;
 }
 
@@ -76,7 +76,7 @@ if ($errno) {
 fwrite($sock, "$app_key\n");
 fwrite($sock, "$app_secret\n");
 fwrite($sock, $_SESSION['oauth_token']."\n");
-fwrite($sock, $_SESSION['oauth_secret']."\n");
+fwrite($sock, $_SESSION['oauth_token_secret']."\n");
 $ret = chop(fgets($sock));
 
 // CHANGEME
