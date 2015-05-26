@@ -384,10 +384,11 @@ end
 # get a line from the client, downcase and remove trailing whitespace
 # return: command
 def get_command
-	command = Thread.current['client'].gets.chop
+	command = Thread.current['client'].gets
 	return unless command
 
 	command.downcase!
+	command.chomp!
 
 	$log.debug("[#{Thread.current['conn']['userdata'].id}] COMMAND: #{command}")
 
