@@ -40,7 +40,8 @@ if ( $ret == "AUTH_ERR" ) {
 }
 
 // get username from POST data
-$username = $_POST["username"];
+// strip out anything but letter, number, underscore and truncate to 15 characters.
+$username = preg_replace('/[^\w]/','',substr($_POST["username"],0,15));
 
 // verify username is actually set. redirect if not.
 // i remember php did weird stuff with variables being set vs false or something
