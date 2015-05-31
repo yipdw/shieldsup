@@ -63,6 +63,7 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
         // todo: make this error message prettier?
         
         if ($errno) {
+            print_html_header();
             print("something is wrong: <strong>$errstr!</strong><br />\n");
             print("the backend server probably isn't running. kick it.\n");
             print("</body></html>");
