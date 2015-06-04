@@ -2,7 +2,7 @@
 require('conf.php');
 require('lib.php');
 
-    su_session_start();
+    $sock = su_session_start($socket_file, $app_key, $app_secret);
 
 // i have literally no idea why i'm writing newlines like this.
 fwrite($sock, 'STATUS'."\n");

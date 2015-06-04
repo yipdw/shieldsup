@@ -2,7 +2,7 @@
 require('conf.php');
 require('lib.php');
 
-    su_session_start();
+    $sock = su_session_start($socket_file, $app_key, $app_secret);
 
     print_html_header();
 

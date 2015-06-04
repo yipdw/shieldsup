@@ -37,23 +37,30 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
         </head>
 
         <body>
+        <body bgcolor=#F1ECDF>
+        <center>
+        <h1>Shields Up</h1>
 
+        <p><b><font color="red">WARNING!!!</p>
+
+        <p>This is a VERY EARLY BETA! Use at your own risk.</font></b></p>
+        </center>
         <?php
     } // print_html_header()
 
 
     /* Shields Up Start Session
-     (None) -> None
+     (Socket File, Twitter API Key, Twitter API Secret) -> Stream Socket
 
      Start PHP session. Redirect to twitter_login.php if no oauth session.
      Open connection to backend via socket. Throw error if can't connect.
      Log in to backend. Throw error on auth issue.
+     
+     Returns stream socket.
      */
-    function su_session_start() {
+    function su_session_start($socket_file, $app_key, $app_secret) {
         session_start();
 
-        global $socket_file, $app_key, $app_secret;
-        
         // User is not logged in, redirect
         if(empty($_SESSION['oauth_uid'])){
             header('Location: twitter_login.php');
@@ -88,6 +95,8 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
             print("</body></html>");
             exit;
         }
+
+        return $sock;
 
     } // su_session_start()
 
