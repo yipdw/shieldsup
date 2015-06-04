@@ -51,6 +51,8 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
      */
     function su_session_start() {
         session_start();
+
+        global $socket_file, $app_key, $app_secret;
         
         // User is not logged in, redirect
         if(empty($_SESSION['oauth_uid'])){
