@@ -61,7 +61,7 @@ Uncomment `LoadModule php5_module libexec/apache2/libphp5.so` in `/etc/apache2/h
 % sudo apachectl restart
 ```
 
-At this point, navigating to http://localhost/shieldsup should load the PHP app. YOU'RE NOT DONE YET.
+At this point, navigating to [http://localhost/shieldsup](http://localhost/shieldsup) should load the PHP app. YOU'RE NOT DONE YET.
 
 ## Setup PHP config
 
@@ -73,4 +73,4 @@ Most easily done by copying the `conf.php.sample` file under the `web/` director
 
 ## Now you're done!
 
-Go to http://localhost/shieldsup and check it out!
+Go to [http://localhost/shieldsup](http://localhost/shieldsup) and check it out!
