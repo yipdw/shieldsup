@@ -66,4 +66,3 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 }
 
 ?>
-
