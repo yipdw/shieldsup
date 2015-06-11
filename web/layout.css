@@ -39,6 +39,14 @@ p {
     line-height: 1.45em;
 }
 
+a:link, a:visited, a:active {
+    color: #1480CF;
+}
+
+a:hover {
+    color: #555;
+}
+
 table {
     margin: 0;
     border: 0;
