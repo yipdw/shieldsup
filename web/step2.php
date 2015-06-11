@@ -22,8 +22,15 @@ fwrite($sock, 'USER '.$username."\n");
 
 // these variables should be grabbed from post at a later date.
 // for now, use these defaults.
-fwrite($sock, "RT 1\n");
-fwrite($sock, "REPLY 0\n");
+$include_rt = 1;
+$include_reply = 0;
+fwrite($sock, "RT $include_rt\n");
+fwrite($sock, "REPLY $include_reply\n");
+
+// Store the request details in the PHP session
+$_SESSION["username"]=$username;
+$_SESSION["include_rt"]=$include_rt;
+$_SESSION["include_reply"]=$include_reply;
 
 // kick off the backend processing
 fwrite($sock, "GO\n");
