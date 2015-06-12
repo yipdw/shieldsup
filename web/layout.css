@@ -1,0 +1,80 @@
+body {
+    max-width: 800px; /* keep line at a nice length */
+    margin: auto; /* that will center horizontally the body */
+    background: #fff;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-size: 1.1em;
+    color: #444;
+    padding: 0 15px;
+}
+
+h1 {
+    text-align: center;
+    color: #555;
+    margin: 10px 0;
+}
+
+h1, h2, h3, h4, h5, strong {
+    font-weight: 600;
+    /* to trigger Open Sans's bold font set, rather than browser-calculated bold */
+}
+
+h2, h3, h4, h5 {
+    text-transform: uppercase;
+    color: #777;
+}
+
+h2 {
+    font-size: 1.3em;
+    margin: 25px 0 0;
+    /* Header mark the beginning of a new topic, so we insert a margin
+       above to insist on the new content. Basic design tips learned from
+       Robin Williams books. */
+}
+
+p {
+    margin: 0 0 10px;
+    /* By default, paragraph are far away from other block. This will keep
+       them near thing up but not so much from thing down. */
+    line-height: 1.45em;
+}
+
+a:link, a:visited, a:active {
+    color: #1480CF;
+}
+
+a:hover {
+    color: #555;
+}
+
+table {
+    margin: 0;
+    border: 0;
+    padding: 10px;
+}
+
+.warning {
+    /* Call me a web hipster but using class is cleaner than font and ... */
+    margin: 10px 0 20px;
+}
+.warning h3 {
+    color: #c33;
+    margin: 0 0 5px;
+}
+.warning p {
+    border-top: 1px solid #c33;
+    border-bottom: 1px solid #c33;
+    padding: 15px 0;
+    font-size: .9em;
+}
+.warning strong {
+    color: #c33;
+}
+
+/********** Responsive adjustments ***********/
+/* Tablets and desktop */
+@media (min-width: 720px) {
+    h1 {
+        margin: 25px 0;
+    }
+}

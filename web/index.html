@@ -1,4 +1,4 @@
-<!-- 
+<!--
 placeholder
 -----------
 
@@ -20,68 +20,25 @@ this seems like more steps that are necessary, but it leaves some room for furth
 <html lang="en-US">
 <head>
     <title>OAPI: Shields Up</title>
-
-    <style>
-    body {
-        max-width: 800px; /* keep line at a nice length */
-        margin: auto; /* that will center horizontally the body */
-        background-color: #f1ecdf;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 1.2em;
-    }
-
-    h1 {
-        text-align: center;
-    }
-
-    h2 {
-        margin: 25px 0px 0px;
-        /* Header mark the beginning of a new topic, so we insert a margin
-           above to insist on the new content. Basic design tips learned from 
-           Robin Williams books. */
-    }
-
-    p { 
-        margin: 0px 0px 10px;
-        /* By default, paragraph are far away from other block. This will keep 
-           them near thing up but not so much from thing down. */
-    }
-
-    table {
-        margin: 0px;
-        border: 0px;
-        padding: 10px;
-    }
-
-    .warning {
-        /* Call me a web hipster but using class is cleaner than font and ... */
-        margin: 20px 40px;
-        padding: 0px 10px;
-        background-color: #ffbcdf;
-        border: 3px double #990044;
-        border-radius: 10px;
-    }
-    .warning h3 {
-            margin: 20px 0px 10px; 
-    }
-    </style>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="layout.css" media="all" type="text/css" />
 </head>
 <body>
     <h1>Shields Up</h1>
 
     <div class="warning">
-        <h3>WARNING!!!</h3>
-        <p>This is a VERY EARLY BETA! Use at your own risk.</p>
+        <h3>Warning</h3>
+        <p>This is a <strong>very early beta</strong>! Use at your own risk.</p>
     </div>
- 
+
     <p>Shields Up aims to mitigate the flood of tweets that can inundate
-    a user when a single account publicly mentions their twitter handle. 
+    a user when a single account publicly mentions their twitter handle.
     Instead of using a follower list as a source for accounts to block,
     we build our list based off of interactions such as retweets of the offending
     user.</p>
 
     <h2>How it works</h2>
-    <p>After logging into twitter, you will be asked to enter a username 
+    <p>After logging into twitter, you will be asked to enter a username
     that is the source of unwanted attention toward you. Shields Up will
     gather a list of accounts that may be likely to follow a dogpile request,
     based on followers, retweets, and/or replies. You will then be prompted
@@ -92,13 +49,13 @@ this seems like more steps that are necessary, but it leaves some room for furth
     Note that the rollout is expected to take several weeks; you may not have
     this option available yet.</p>
 
-    <p>Shields Up is an Open Source project by OAPI. The backend is Ruby 
+    <p>Shields Up is an Open Source project by OAPI. The backend is Ruby
     and the frontend is PHP. Feel free to review/contribute at
     <a href="https://github.com/oapi/shieldsup">
     https://github.com/oapi/shieldsup</a>.
 
     <h2>Still want to try it?</h2>
-    <p>If you are certain you want to try Shields Up in its BETA state, 
+    <p>If you are certain you want to try Shields Up in its BETA state,
     <a href="twitter_login.php">proceed on</a>.</p>
 
 </body>
