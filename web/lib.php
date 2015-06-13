@@ -18,33 +18,21 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
      */
     function print_html_header(){
         ?>
-        <html>
+        <!DOCTYPE html>
+        <html lang="en-US">
         <head>
         <title>OAPI: Shields Up</title>
-
-        <style>
-            body {
-                font-family: Arial, Helvetica, sans-serif;
-                font-size: 1.2em;
-            }
-
-            table {
-            margin: 0px;
-            border: 0px;
-            padding: 10px;
-            }
-        </style>
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="layout.css" media="all" type="text/css" />
         </head>
 
         <body>
-        <body bgcolor=#F1ECDF>
-        <center>
         <h1>Shields Up</h1>
 
-        <p><b><font color="red">WARNING!!!</p>
-
-        <p>This is a VERY EARLY BETA! Use at your own risk.</font></b></p>
-        </center>
+        <div class="warning">
+            <h3>Warning</h3>
+            <p>This is a <strong>very early beta</strong>! Use at your own risk.</p>
+        </div>
         <?php
     } // print_html_header()
 
