@@ -13,7 +13,7 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
 
     /* Print HTML Header
      (None) -> None
-     
+
      Print standard HTML header for page (title, style).
      */
     function print_html_header(){
@@ -22,6 +22,7 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
         <html lang="en-US">
         <head>
         <title>OAPI: Shields Up</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0" />
         <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="layout.css" media="all" type="text/css" />
         </head>
@@ -43,7 +44,7 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
      Start PHP session. Redirect to twitter_login.php if no oauth session.
      Open connection to backend via socket. Throw error if can't connect.
      Log in to backend. Throw error on auth issue.
-     
+
      Returns stream socket.
      */
     function su_session_start($socket_file, $app_key, $app_secret) {
@@ -54,11 +55,11 @@ function login_to_backend($sock, $app_key, $app_secret, $oauth_token, $oauth_tok
             header('Location: twitter_login.php');
             exit;
         }
-        
+
         $sock = stream_socket_client("unix://$socket_file", $errno, $errstr);
-        
+
         // todo: make this error message prettier?
-        
+
         if ($errno) {
             print_html_header();
             print("something is wrong: <strong>$errstr!</strong><br />\n");
