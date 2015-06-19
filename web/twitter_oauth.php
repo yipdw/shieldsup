@@ -20,7 +20,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 	if(!isset($user_info->id) || $user_info->id == 0 || !is_numeric($user_info->id)){
         die("API rate limit exceeded. Please try again later.");
 
-    } else if (isset($user_info->error)){
+    } else if (isset($user_info->errors)){
 		// Something's wrong, go back to square 1
 		header('Location: twitter_login.php');
 
