@@ -28,7 +28,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
     // Let's get the user's info
 	$user_info = $twitteroauth->get('account/verify_credentials');
 
-	if(isset($user_info->error)){
+	if(isset($user_info->error) || $user_info->id == 0 || !is_numeric($user_info->id)){
 		// Something's wrong, go back to square 1
 		header('Location: twitter_login.php');
 
