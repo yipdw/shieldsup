@@ -19,7 +19,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
     // User id might be 0 if we've capped out on API requests.
 	if(!isset($user_info->id) || $user_info->id == 0 || !is_numeric($user_info->id)){
         die("API rate limit exceeded. Please try again later.");
-        
+
     } else if (isset($user_info->error)){
 		// Something's wrong, go back to square 1
 		header('Location: twitter_login.php');
@@ -35,16 +35,17 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 
         // Let's find the user by its ID
 		$query = sprintf("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE userid = '%d'", mysql_real_escape_string($user_info->id));
-        $result = mysql_query($query, $link);
+        $query_result = mysql_query($query, $link);
+        if(!$query_result) die ("Error querying database: ". mysql_error());
 
  
 		// If not, let's add it to the database
-		if(mysql_num_rows($result) == 0){
+		if(mysql_num_rows($query_result) == 0){
 			$query = sprintf("INSERT INTO tokens (userid, oauth_token, oauth_secret, added) VALUES ('%d', '%s', '%s', NOW())",mysql_real_escape_string($user_info->id), mysql_real_escape_string($access_token['oauth_token']), mysql_real_escape_string($access_token['oauth_token_secret']));
             $result = mysql_query($query, $link);
             if(!$result) die("Problems writing to the database");
 
-			$query = mysql_query("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE id = " . mysql_insert_id(), $link);
+			$query_result = mysql_query("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE id = " . mysql_insert_id(), $link);
 
         } else {
 			// Update the tokens
@@ -52,7 +53,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
             mysql_query($query, $link); // We don't want to overwrite this $result.
 		}
 
-        $result = mysql_fetch_array($query);
+        $result = mysql_fetch_array($query_result);
 
         $_SESSION['access_token'] = $access_token;
 		$_SESSION['id'] = $result['id'];
