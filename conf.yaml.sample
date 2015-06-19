@@ -1,6 +1,6 @@
-base_dir: /path/to/shieldsup
+base_dir: "/path/to/shieldsup"
 socket_file: shieldsup.sock
-temp_dir: /path/to/temp/dir
+temp_dir: "/path/to/temp/dir"
 db:
   host: MYSQL_HOST 
   username: MYSQL_USER
