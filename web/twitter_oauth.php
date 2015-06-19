@@ -33,22 +33,23 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
         // Let's find the user by its ID
 		$query = sprintf("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE userid = '%s'". mysql_real_escape_string($user_info->id));
         $result = mysql_query($query, $link);
-        $result = mysql_fetch_array($query);
+
  
 		// If not, let's add it to the database
-		if(empty($result)){
+		if(mysql_num_rows($result) == 0){
 			$query = sprintf("INSERT INTO tokens (userid, oauth_token, oauth_secret, added) VALUES ('%s', '%s', '%s', NOW())",mysql_real_escape_string($user_info->id), mysql_real_escape_string($access_token['oauth_token']), mysql_real_escape_string($access_token['oauth_token_secret']));
             $result = mysql_query($query, $link);
             if(!$result) die("Problems writing to the database");
 
 			$query = mysql_query("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE id = " . mysql_insert_id(), $link);
-			$result = mysql_fetch_array($query);
 
         } else {
 			// Update the tokens
 			$query = sprintf("UPDATE tokens SET oauth_token = '%s', oauth_secret = '%s', accessed = NOW() WHERE userid = '%s'", mysql_real_escape_string($access_token['oauth_token']), mysql_real_escape_string($access_token['oauth_token_secret']), mysql_real_escape_string($user_info->id));
             mysql_query($query, $link); // We don't want to overwrite this $result.
 		}
+
+        $result = mysql_fetch_array($query);
 
         $_SESSION['access_token'] = $access_token;
 		$_SESSION['id'] = $result['id'];
