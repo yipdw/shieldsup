@@ -1,9 +1,9 @@
 <?php
 
 $socket_file = "/usr/local/oapi/shieldsup.sock";
-$app_key = '';
-$app_secret = '';
-$callback_url = '';
+$app_key = ''; // Twitter Consumer Key (API Key)
+$app_secret = ''; // Twitter Secret (API Secret)
+$callback_url = ''; // twitter_oauth.php
 $db_host = '';
 $db_user = '';
 $db_pass = '';
