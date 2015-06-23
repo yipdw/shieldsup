@@ -1,63 +1,54 @@
 <?php
 
-require("conf.php");
-require("twitteroauth/twitteroauth.php");
+include("conf.php");
+
+mysql_connect($db_host, $db_user, $db_pass);
+mysql_select_db($db_name);
+
+require "twitteroauth/twitteroauth.php";
 
 session_start();
 
-if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty($_SESSION['oauth_token_secret'])){
+// THIS IS THE UGLIEST CODE EVER BUT SOMEONE ELSE WROTE IT SO I DON'T FEEL BAD.
+// regardless, we should still fix it.
+// seriously i can barely read this crap.
 
+if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty($_SESSION['oauth_token_secret'])){
+	// We've got everything we need
 	// TwitterOAuth instance, with two new parameters we got in twitter_login.php
 	$twitteroauth = new TwitterOAuth($app_key, $app_secret, $_SESSION['oauth_token'], $_SESSION['oauth_token_secret']);
-
-    // Let's request the access token
+	// Let's request the access token
 	$access_token = $twitteroauth->getAccessToken($_GET['oauth_verifier']);
-
-    // Let's get the user's info
+	// Save it in a session var
+	$_SESSION['access_token'] = $access_token;
+	// Let's get the user's info
 	$user_info = $twitteroauth->get('account/verify_credentials');
 
-    if (isset($user_info->errors)){
+	if(isset($user_info->error)){
 		// Something's wrong, go back to square 1
 		header('Location: twitter_login.php');
-
-    } else {
-
-        // TODO: This needs to get updated to MySQLi or PDO_MySQL
-
-        $link = mysql_connect($db_host, $db_user, $db_pass);
-        if (!$link) die('Could not connect: ' . mysql_error());
-        $db_selected = mysql_select_db($db_name, $link);
-        if (!$db_selected) die ('Could not connect to DB:' . mysql_error());
-
-        // Let's find the user by its ID
-		$query = sprintf("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE userid = '%d'", mysql_real_escape_string($user_info->id));
-        $query_result = mysql_query($query, $link);
-        if(!$query_result) die ("Error querying database: ". mysql_error());
-
+	} else {
+		// Let's find the user by its ID
+		// todo: error checking?! sanitize.
+		$query = mysql_query("SELECT * FROM tokens WHERE userid = ". $user_info->id);
+		$result = mysql_fetch_array($query);
  
 		// If not, let's add it to the database
-		if(mysql_num_rows($query_result) == 0){
-			$query = sprintf("INSERT INTO tokens (userid, oauth_token, oauth_secret, added) VALUES ('%d', '%s', '%s', NOW())",mysql_real_escape_string($user_info->id), mysql_real_escape_string($access_token['oauth_token']), mysql_real_escape_string($access_token['oauth_token_secret']));
-            $result = mysql_query($query, $link);
-            if(!$result) die("Problems writing to the database");
-
-			$query_result = mysql_query("SELECT id, userid, oauth_token, oauth_secret FROM tokens WHERE id = " . mysql_insert_id(), $link);
-
-        } else {
+		if(empty($result)){
+			// todo: this needs to be sanitized.
+			$query = mysql_query("INSERT INTO tokens (userid, oauth_token, oauth_secret, added) VALUES ('{$user_info->id}', '{$access_token['oauth_token']}', '{$access_token['oauth_token_secret']}', NOW())");
+			$query = mysql_query("SELECT * FROM tokens WHERE id = " . mysql_insert_id());
+			$result = mysql_fetch_array($query);
+		} else {
 			// Update the tokens
-			$query = sprintf("UPDATE tokens SET oauth_token = '%s', oauth_secret = '%s', accessed = NOW() WHERE userid = '%d'", mysql_real_escape_string($access_token['oauth_token']), mysql_real_escape_string($access_token['oauth_token_secret']), mysql_real_escape_string($user_info->id));
-            mysql_query($query, $link); // We don't want to overwrite this $result.
+			$query = mysql_query("UPDATE tokens SET oauth_token = '{$access_token['oauth_token']}', oauth_secret = '{$access_token['oauth_token_secret']}', accessed = NOW() WHERE userid = {$user_info->id}");
 		}
-
-        $result = mysql_fetch_array($query_result);
-
-        $_SESSION['access_token'] = $access_token;
+ 
 		$_SESSION['id'] = $result['id'];
 		$_SESSION['oauth_uid'] = $result['userid'];
 		$_SESSION['oauth_token'] = $result['oauth_token'];
 		$_SESSION['oauth_token_secret'] = $result['oauth_secret'];
-
-        mysql_close($link);
+ 
 		header('Location: step1.php');
 	}
 } else {
