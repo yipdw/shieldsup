@@ -17,9 +17,11 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 	$user_info = $twitteroauth->get('account/verify_credentials');
 
     if (isset($user_info->errors)){
-		// Something's wrong, go back to square 1
-		header('Location: twitter_login.php');
-
+        // Something's wrong, go back to square 1, unless we're rate limited
+        error_log("Twitter returned error: " . print_r($user_info->errors, TRUE));
+        if ($user_info->errors[0]->code == "88") {  // rate limiting
+            die("Rate limited; not retrying");
+        }
     } else {
 
         // TODO: This needs to get updated to MySQLi or PDO_MySQL
@@ -66,4 +68,3 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
 }
 
 ?>
-

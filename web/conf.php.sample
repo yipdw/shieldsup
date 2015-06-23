@@ -1,13 +1,13 @@
 <?php
 
-$socket_file = "/usr/local/oapi/shieldsup.sock";
+$socket_file = "/usr/local/oapi/shieldsup.sock"; # The ruby server always creates the socket within base_dir
 $app_key = ''; // Twitter Consumer Key (API Key)
 $app_secret = ''; // Twitter Secret (API Secret)
-$callback_url = ''; // twitter_oauth.php
-$db_host = '';
-$db_user = '';
-$db_pass = '';
-$db_name = '';
+$callback_url = 'http://example.org/path/to/shieldsup/twitter_oauth.php';
+$db_host = 'MYSQL_HOST';
+$db_user = 'MYSQL_USER';
+$db_pass = 'MYSQL_PASS';
+$db_name = 'MYSQL_DB';
 
 ?>
 

@@ -31,8 +31,8 @@ Find a mysql you can use (not covered here) and get the schema into it like so:
 
 ```
 % mysql -h db.example.com -u yourUser -e 'CREATE DATABASE `shieldsup`'
-% mysql -h db.example.com -u yourUser -e 'GRANT ALL ON `shieldsup`.* TO \'shieldsup\'@\'%\' IDENTIFIED BY \'superSecurePassword\''
-% mysql -h db.example.com -u yourUser < doc/db_schema.txt
+% mysql -h db.example.com -u yourUser -e 'GRANT ALL ON `shieldsup`.* TO '\''shieldsup'\''@'\''%'\'' IDENTIFIED BY '\''superSecurePassword'\'''
+% mysql -h db.example.com -u yourUser -D shieldsup < doc/db_schema.txt
 ```
 
 ## Create a config

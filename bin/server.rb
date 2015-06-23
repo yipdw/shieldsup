@@ -508,6 +508,8 @@ def main
 	end
 
 	server = UNIXServer.new(socket_file)
+	# Handle cases where the backend process and web server do not share a username. TODO: do we need to add proper security for this case?
+	File.chmod($config['socket_mode'], socket_file)
 
 	while true
 		client = server.accept

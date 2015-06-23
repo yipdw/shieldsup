@@ -1,5 +1,6 @@
 base_dir: "/path/to/shieldsup"
-socket_file: shieldsup.sock
+socket_file: "shieldsup.sock" # relative to base_dir
+socket_mode: 0660 # Change to 666 if your server and webserver run as diferent users
 temp_dir: "/path/to/temp/dir"
 db:
   host: MYSQL_HOST 
