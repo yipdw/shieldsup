@@ -1,12 +1,12 @@
 <?php
-require('conf.php');
-require('lib.php');
+	require('conf.php');
+	require('lib.php');
 
-    $sock = su_session_start($socket_file, $app_key, $app_secret);
+	$sock = su_session_start($socket_file, $app_key, $app_secret);
 
-    print_html_header();
+	print_html_header();
 
-?>
+	?>
 <form action="step2.php" method="POST">
 
 <table>
@@ -21,4 +21,3 @@ require('lib.php');
 
 </body>
 </html>
-
