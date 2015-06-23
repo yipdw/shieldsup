@@ -1,0 +1,60 @@
+#!/bin/sh -e
+
+# A function to expect non-empty files.
+assert_nonempty() {
+  file=$1
+
+  if [ ! -s $file ]; then
+    echo "$0: $file either does not exist or is empty; aborting"
+    exit 1
+  fi
+}
+
+# If /tmp/CONFIGURE_MYSQL isn't present, we have nothing to do.
+if [ ! -f /tmp/CONFIGURE_MYSQL ]; then
+  exit 0
+fi
+
+# If /tmp/CONFIGURE_MYSQL is present, we also expect the following files to be
+# present and non-empty:
+#
+# * /tmp/MYSQL_ROOT_PASSWORD
+# * /tmp/SHIELDSUP_DATABASE_NAME
+# * /tmp/SHIELDSUP_DATABASE_USERNAME
+# * /tmp/SHIELDSUP_DATABASE_PASSWORD
+
+MYSQL_ROOT_PASSWORD_FILE=/tmp/MYSQL_ROOT_PASSWORD
+SHIELDSUP_DATABASE_NAME_FILE=/tmp/SHIELDSUP_DATABASE_NAME
+SHIELDSUP_DATABASE_USERNAME_FILE=/tmp/SHIELDSUP_DATABASE_USERNAME
+SHIELDSUP_DATABASE_PASSWORD_FILE=/tmp/SHIELDSUP_DATABASE_PASSWORD
+SHIELDSUP_SCHEMA_FILE=/home/dev/shieldsup/doc/db_schema.txt
+
+assert_nonempty $MYSQL_ROOT_PASSWORD_FILE
+assert_nonempty $SHIELDSUP_DATABASE_NAME_FILE
+assert_nonempty $SHIELDSUP_DATABASE_USERNAME_FILE
+assert_nonempty $SHIELDSUP_DATABASE_PASSWORD_FILE
+assert_nonempty $SHIELDSUP_SCHEMA_FILE
+
+MYSQL_ROOT_PASSWORD=`cat $MYSQL_ROOT_PASSWORD_FILE`
+SHIELDSUP_DATABASE_NAME=`cat $SHIELDSUP_DATABASE_NAME_FILE`
+SHIELDSUP_DATABASE_USERNAME=`cat $SHIELDSUP_DATABASE_USERNAME_FILE`
+SHIELDSUP_DATABASE_PASSWORD=`cat $SHIELDSUP_DATABASE_PASSWORD_FILE`
+
+# Set the root password to whatever's in /tmp/MYSQL_ROOT_PASSWORD.
+mysqladmin password $MYSQL_ROOT_PASSWORD
+
+# Set up the Shields Up schema and user.
+mysqladmin --password=$MYSQL_ROOT_PASSWORD create $SHIELDSUP_DATABASE_NAME
+
+echo "GRANT ALL PRIVILEGES ON $SHIELDSUP_DATABASE_NAME.* TO \
+	$SHIELDSUP_DATABASE_USERNAME IDENTIFIED BY \"$SHIELDSUP_DATABASE_PASSWORD\"" | \
+	mysql -u root --password=$MYSQL_ROOT_PASSWORD $SHIELDSUP_DATABASE_NAME
+
+cat $SHIELDSUP_SCHEMA_FILE | mysql -u shieldsup --password=$SHIELDSUP_DATABASE_PASSWORD $SHIELDSUP_DATABASE_NAME
+
+# Remove the configuration sentinel and associated data.
+rm -f /tmp/CONFIGURE_MYSQL
+rm -f $MYSQL_ROOT_PASSWORD_FILE
+rm -f $SHIELDSUP_DATABASE_NAME_FILE
+rm -f $SHIELDSUP_DATABASE_USERNAME_FILE
+rm -f $SHIELDSUP_DATABASE_PASSWORD_FILE
