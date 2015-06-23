@@ -16,11 +16,7 @@ if(!empty($_GET['oauth_verifier']) && !empty($_SESSION['oauth_token']) && !empty
     // Let's get the user's info
 	$user_info = $twitteroauth->get('account/verify_credentials');
 
-    // User id might be 0 if we've capped out on API requests.
-	if(!isset($user_info->id) || $user_info->id == 0 || !is_numeric($user_info->id)){
-        die("API rate limit exceeded. Please try again later.");
-
-    } else if (isset($user_info->errors)){
+    if (isset($user_info->errors)){
 		// Something's wrong, go back to square 1
 		header('Location: twitter_login.php');
 
