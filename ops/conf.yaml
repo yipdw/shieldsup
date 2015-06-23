@@ -1,0 +1,8 @@
+base_dir: "/home/dev/shieldsup"
+socket_file: "sockets/shieldsup.sock"
+temp_dir: "/tmp"
+db:
+  host: localhost
+  username: shieldsup
+  password: shieldsup
+  database: shieldsup
