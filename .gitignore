@@ -3,7 +3,6 @@ conf.php
 *.db
 *.swp
 *.swo
-Gemfile.lock
 log/*
 pkg/*
 tmp/*
