@@ -48,10 +48,11 @@ foreach ( $lines as $l ) {
 
 fclose($tempfile);
 
+$filename="shieldsup_" . $_SESSION["username"] . "_" . ($_SESSION["include_rt"] ? "rt" : "no-rt") . "_" . ($_SESSION["include_reply"] ? "reply" : "no-reply") . "_ids.csv"; 
 // add our download headers. thanks, stackoverflow!
 header('Content-Description: File Transfer');
 header('Content-Type: text/csv');
-header('Content-Disposition: attachment; filename=twitter_ids.csv');
+header('Content-Disposition: attachment; filename=' . $filename);
 header('Content-Transfer-Encoding: binary');
 header('Expires: 0');
 header('Cache-Control: must-revalidate');
