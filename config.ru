@@ -1,3 +1,5 @@
+require 'sequel'
+
 # Require base library
 require_relative 'lib/shieldsup'
 

@@ -12,12 +12,15 @@ GEM
     json (1.8.3)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
+    mime-types (1.25.1)
     multipart-post (2.0.0)
     mysql2 (0.3.18)
     naught (1.0.0)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    rest-client (1.6.9)
+      mime-types (~> 1.16)
     sequel (4.23.0)
     simple_oauth (0.3.1)
     sinatra (1.4.6)
@@ -38,6 +41,10 @@ GEM
       memoizable (~> 0.4.0)
       naught (~> 1.0)
       simple_oauth (~> 0.3.0)
+    unirest (1.1.2)
+      addressable (~> 2.3.5)
+      json (~> 1.8.1)
+      rest-client (~> 1.6.7)
 
 PLATFORMS
   ruby
@@ -45,6 +52,8 @@ PLATFORMS
 DEPENDENCIES
   mysql2
   sequel
+  simple_oauth
   sinatra
   sqlite3
   twitter
+  unirest

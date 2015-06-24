@@ -7,6 +7,7 @@ class ShieldsUp::Frontend < Sinatra::Base
 
 	def initialize
 		require_relative 'frontend/index'
+		require_relative 'frontend/login'
 		super
 	end
 end
