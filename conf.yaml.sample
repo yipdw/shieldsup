@@ -1,9 +1,5 @@
-base_dir: "/path/to/shieldsup"
-socket_file: "shieldsup.sock" # relative to base_dir
-socket_mode: 0660 # Change to 666 if your server and webserver run as diferent users
-temp_dir: "/path/to/temp/dir"
-db:
-  host: MYSQL_HOST 
-  username: MYSQL_USER
-  password: MYSQL_PASS
-  database: MYSQL_DB
+# db_uri is in the format: "mysql2://username:password@hostname/database"
+db_uri: "mysql2://username:password@localhost/database"
+
+consumer_key: "twitter_consumer_key"
+consumer_secret: "twitter_consumer_secret"

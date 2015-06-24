@@ -1,10 +1,11 @@
 create table tokens (
     id int unsigned not null auto_increment primary key,
-    userid bigint not null,              
-    oauth_token text,         
+    userid bigint not null,
+    oauth_token text,
     oauth_secret text,
     accessed timestamp,
-    added timestamp );
+    added timestamp
+);
 
 create table jobs (
     id int unsigned not null auto_increment primary key,
@@ -14,5 +15,7 @@ create table jobs (
     opt_rt boolean default 1,
     opt_reply boolean default 0,
     updated timestamp,
-    added timestamp, 
-    status varchar(10) );
+    added timestamp,
+    status varchar(10),
+    errcode varchar(20)
+);

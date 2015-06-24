@@ -6,4 +6,6 @@ conf.php
 log/*
 pkg/*
 tmp/*
+vendor/
+.bundle/
 .DS_Store

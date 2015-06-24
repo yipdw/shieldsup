@@ -1,28 +1,10 @@
-<!--
-placeholder
------------
-
-this file should be an explanation of how the app works, a sternly worded warning on the app being beta, and a link to twitter_login.php to get started.
-
-flow:
-
-index.html: this page
-twitter_login.php: redirects to twitter to get app auth
-step1.php: form to input username. (later versions: checkbox for replies/RTs)
-step2.php: send data to backend, refresh to step3.php
-step3.php: refresh loop until status = done
-step4.php: get_list on backend, read to memory. create output of userids in form of csv, download.
-
-this seems like more steps that are necessary, but it leaves some room for further features without having to drastically change the flow.
-
--->
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
     <title>OAPI: Shields Up</title>
     <meta name="viewport" content="initial-scale=1" />
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="layout.css" media="all" type="text/css" />
+    <link rel="stylesheet" href="/layout.css" media="all" type="text/css" />
 </head>
 <body>
     <h1>Shields Up</h1>
@@ -57,7 +39,7 @@ this seems like more steps that are necessary, but it leaves some room for furth
 
     <h2>Still want to try it?</h2>
     <p>If you are certain you want to try Shields Up in its BETA state,
-    <a href="twitter_login.php">proceed on</a>.</p>
+    <a href="/login">proceed on</a>.</p>
 
 </body>
 </html>
