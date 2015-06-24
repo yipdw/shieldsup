@@ -51,8 +51,6 @@ class ShieldsUp::Frontend
 		resp = Unirest.post url, headers: {"Authorization": oauth_header.to_s}, parameters: params
 		data = Rack::Utils.parse_query resp.body
 
-		p data
-
 		return erb :loginerror unless data["oauth_token"] && data["oauth_token_secret"]
 
 		session[:oauth_token] = data["oauth_token"]
@@ -70,7 +68,6 @@ class ShieldsUp::Frontend
 		begin
 			user = client.verify_credentials
 		rescue => e
-			raise e
 			return erb :loginerror
 		end
 
@@ -79,7 +76,7 @@ class ShieldsUp::Frontend
 			t = ShieldsUp::Token.new userid: user.id, oauth_token: session[:oauth_token], oauth_secret: session[:oauth_secret], added: Time.now
 		end
 
-		t.accessed = Time.now
+		t[:accessed] = Time.now
 		t.save
 
 		return redirect("/step/1")
