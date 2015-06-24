@@ -1,0 +1,40 @@
+<table>
+	<thead>
+		<th>Twitter handle</th>
+		<th>Status</th>
+		<th>RTs</th>
+		<th>Replies</th>
+		<th>Filter friends</th>
+		<th>Download</th>
+	</thead>
+	<tr>
+		<td><a href="/job/new">Create new job</a></td>
+	</tr>
+	<% @jobs.each do |job| %>
+		<tr>
+			<td><%= job.target_username %></td>
+			<td>
+				<% if ["WAITING", "RUNNING"].include? job.status %>
+					Processing
+				<% elsif job.status == "ERROR" %>
+					Error
+				<% elsif job.status == "DONE" %>
+					Completed
+				<% else %>
+					Unknown
+				<% end %>
+			</td>
+			<td><%= job.opt_rt ? "✓" : "✗" %></td>
+			<td><%= job.opt_reply ? "✓" : "✗" %></td>
+			<td><%= job.opt_filter_friends ? "✓" : "✗" %></td>
+			<td>
+				<% if job.status == "DONE" && job.outputguid %>
+					<a href="/blob/<%= job.outputguid %>">Download</a>
+				<% else %>
+					Not ready.
+				<% end %>
+			</td>
+		</tr>
+	<% end %>
+</table>
+ 

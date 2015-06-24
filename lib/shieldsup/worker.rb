@@ -2,7 +2,7 @@ require 'twitter'
 require 'logger'
 
 class ShieldsUp::Worker
-	def initialize(job)
+	def initialize(job, args={})
 		@job = job
 		@token = ShieldsUp::Token.find(userid: job.userid)
 
@@ -50,11 +50,11 @@ class ShieldsUp::Worker
 		begin
 			tweets = @twitter.user_timeline(username, {count: 200, include_rts: false})
 		rescue Twitter::Error::TooManyRequests => e
-			@log.warn("[#{@user.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
+			@log.warn("[#{@token.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
 			sleep error.rate_limit.reset_in
 			retry
 		rescue Twitter::Error::NotFound => e
-			$log.warn("[#{@user.userid}] ERR_NOTFOUND: user not found (#{username})")
+			$log.warn("[#{@token.userid}] ERR_NOTFOUND: user not found (#{username})")
 			raise ShieldsUp::NotFoundException("ERR_NOTFOUND: user not found (#{username})")
 		end
 
@@ -70,7 +70,7 @@ class ShieldsUp::Worker
 		begin
 			follower_ids = @twitter.follower_ids
 		rescue Twitter::Error::TooManyRequests => e
-			@log.warn("[#{@user.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
+			@log.warn("[#{@token.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
 			sleep e.rate_limit.reset_in
 			retry
 		end
@@ -87,7 +87,7 @@ class ShieldsUp::Worker
 		begin
 			friend_ids = @twitter.friend_ids
 		rescue Twitter::Error::TooManyRequests => e
-			@log.warn("[#{@user.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
+			@log.warn("[#{@token.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
 			sleep e.rate_limit.reset_in
 			retry
 		end
@@ -104,11 +104,11 @@ class ShieldsUp::Worker
 		begin
 			userdata = @twitter.retweeters_of(tweetid)
 		rescue Twitter::Error::TooManyRequests => error
-			@log.warn("[#{@user.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
+			@log.warn("[#{@token.userid}] ERR_RATELIMIT: Rate limited for #{e.rate_limit.reset_in}")
 			sleep error.rate_limit.reset_in
 			retry
 		rescue Twitter::Error::NotFound => error
-			$log.warn("[#{@user.userid}] ERR_NOTFOUND: tweet not found (#{tweetid})")
+			$log.warn("[#{@token.userid}] ERR_NOTFOUND: tweet not found (#{tweetid})")
 			raise ShieldsUp::NotFoundException("ERR_NOTFOUND: tweet not found (#{tweetid})")
 		end
 
@@ -183,19 +183,35 @@ class ShieldsUp::Worker
 		# Get top tweets
 		top_tweets = get_top_tweets(tweets)
 		top_tweets.each do |tweetid|
-			get_retweeters(tweetid).map do |user|
+			get_retweeters(tweetid).each do |user|
 				users[user[:id]] = {
-					userid: user[:id],
+					userid: user[:userid],
 					username: user[:username],
-					friend: friends.include?(id),
-					follower: followers.include?(id),
+					friend: friends.include?(user[:userid]),
+					follower: followers.include?(user[:userid]),
 				}
+			end
+		end
+
+		# filter out "friends" - ie, people you follow, if that option is enabled
+		if @job.opt_filter_friends
+			users = users.each do |k, v|
+				if v[:friends]
+					users.delete(k)
+				end
 			end
 		end
 
 		# todo: if reply is set, search API for username, get latest results (what is limit?)
 		# can we get replies only to top tweets? how do we do this with the api?
 
-		return users
+		# output data blob
+		data = []
+		users.each do |u|
+			user = u[1]
+			data << "#{user[:userid]}"
+		end
+
+		return data.join("\n")
 	end
 end

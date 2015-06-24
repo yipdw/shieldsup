@@ -1,17 +1,21 @@
 module ShieldsUp::Manager
 	def self.run
+		log = Logger.new(STDOUT)
 		loop do
-			Job.where(status: "WAITING").each do |job|
-				Thread.start(job) do |job|
-					worker = ShieldsUp::Worker.new(job)
+			ShieldsUp::Job.where(status: "WAITING").each do |job|
+				Thread.start do
 					begin
+						worker = ShieldsUp::Worker.new(job, logger: log)
 						data = worker.run
-						id = ShieldsUp::DataStorage.store(data)
+						filename = "#{job.userid}_#{job.opt_rt ? 'rt' : 'no-rt'}_#{job.opt_reply ? 'reply' : 'no-reply'}_#{job.opt_filter_friends ? 'filter-friend' : 'no-filter-friend'}_ids.csv"
+						id = ShieldsUp::DataStorage.store(filename, data, job.userid)
 
 						job.status = "DONE"
 						job.outputguid = id
 						job.save
-					rescue
+					rescue => e
+						log.error("[job:#{job.id}] ERR_UNKNOWN: #{e.to_s}")
+						log.error("[job:#{job.id}] ERR_UNKNOWN: #{e.backtrace}")
 						job.status = "ERROR"
 						job.errcode = "ERR_UNKNOWN"
 						job.save

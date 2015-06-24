@@ -71,6 +71,9 @@ class ShieldsUp::Frontend
 			return erb :loginerror
 		end
 
+		session[:username] = user.screen_name
+		session[:userid] = user.id
+
 		t = ShieldsUp::Token.find(userid: user.id)
 		unless t
 			t = ShieldsUp::Token.new userid: user.id, oauth_token: session[:oauth_token], oauth_secret: session[:oauth_secret], added: Time.now
@@ -79,6 +82,6 @@ class ShieldsUp::Frontend
 		t[:accessed] = Time.now
 		t.save
 
-		return redirect("/step/1")
+		return redirect("/job/list")
 	end
 end

@@ -8,9 +8,9 @@ module ShieldsUp::DataStorage
 	#
 	# Returns: a GUID for the blob.
 
-	def self.store(filename, data)
+	def self.store(filename, data, userid)
 		id = SecureRandom.uuid()
-		t = ShieldsUp::Blob.new guid: id, filename: filename, data: blob
+		t = ShieldsUp::Blob.new guid: id, filename: filename, userid: userid, data: data
 		t.save
 
 		id
@@ -25,7 +25,7 @@ module ShieldsUp::DataStorage
 	def self.retrieve(guid)
 		t = ShieldsUp::Blob.find(guid: guid)
 		if t
-			return {filename: t.filename, data: t.data}
+			return {filename: t.filename, data: t.data, userid: t.userid}
 		else
 			return nil
 		end

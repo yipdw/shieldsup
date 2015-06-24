@@ -14,6 +14,7 @@ create table jobs (
     target_username varchar(24),
     opt_rt boolean default 1,
     opt_reply boolean default 0,
+    opt_filter_friends boolean default 1,
     updated timestamp,
     added timestamp,
     status varchar(10),
@@ -23,6 +24,7 @@ create table jobs (
 
 create table blobs (
     id int unsigned not null auto_increment primary key,
+    userid bigint not null,
     guid varchar(36),
     filename varchar(255),
     data blob
