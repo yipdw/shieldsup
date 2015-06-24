@@ -5,7 +5,12 @@ module ShieldsUp::Manager
 				Thread.start(job) do |job|
 					worker = ShieldsUp::Worker.new(job)
 					begin
-						worker.run
+						data = worker.run
+						id = ShieldsUp::DataStorage.store(data)
+
+						job.status = "DONE"
+						job.outputguid = id
+						job.save
 					rescue
 						job.status = "ERROR"
 						job.errcode = "ERR_UNKNOWN"

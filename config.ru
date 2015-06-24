@@ -11,6 +11,7 @@ Sequel.connect ShieldsUp::Config.db_uri
 
 # Load the rest of our libraries
 require_relative 'lib/shieldsup/models'
+require_relative 'lib/shieldsup/datastorage'
 require_relative 'lib/shieldsup/worker'
 require_relative 'lib/shieldsup/manager'
 require_relative 'lib/shieldsup/frontend'

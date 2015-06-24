@@ -17,5 +17,13 @@ create table jobs (
     updated timestamp,
     added timestamp,
     status varchar(10),
-    errcode varchar(20)
+    errcode varchar(20),
+    outputguid varchar(36)
+);
+
+create table blobs (
+    id int unsigned not null auto_increment primary key,
+    guid varchar(36),
+    filename varchar(255),
+    data blob
 );
