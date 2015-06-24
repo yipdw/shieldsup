@@ -14,16 +14,13 @@ Start by pulling a copy of the Shields up repository!
 
 ## Install Ruby Dependencies
 
-You'll need the following ruby gems:
-* logger
-* mysql2
-* twitter
-
-Install them like so:
+Install the Ruby dependencies like so:
 
 ```
-% gem install logger mysql2 twitter
+% bundle install
 ```
+
+If you get an error running this command, make sure you have the MySQL libraries installed, as well as Bundler (which can be installed with `gem install bundler`).
 
 ## Setup a MySQL
 
@@ -46,31 +43,7 @@ Most easily done by copying the `conf.yaml.sample` file and editing that:
 ## Start the Ruby Server
 
 ```
-% bin/server.rb
+% bundle exec thin -p 8080 start
 ```
 
-## Get apache to serve Shields Up PHP App
-
-This is a super hacky method to get the stock apache webserver in OS X Yosemite to get at the Shields up app:
-
-Uncomment `LoadModule php5_module libexec/apache2/libphp5.so` in `/etc/apache2/httpd.conf` then setup a symlink to your `shieldsup/web` path
-
-```
-% pathToShieldsUp='/path/to/shieldsup'
-% sudo ln -s "${pathToShieldsUp}/web" /Library/WebServer/Documents/shieldsup
-% sudo apachectl restart
-```
-
-At this point, navigating to [http://localhost/shieldsup](http://localhost/shieldsup) should load the PHP app. YOU'RE NOT DONE YET.
-
-## Setup PHP config
-
-Most easily done by copying the `conf.php.sample` file under the `web/` directory and editing that:
-
-```
-% cp web/conf.php.sample web/conf.php
-```
-
-## Now you're done!
-
-Go to [http://localhost/shieldsup](http://localhost/shieldsup) and check it out!
+Go to [http://localhost:8080](http://localhost:8080) and check it out!
