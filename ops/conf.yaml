@@ -1,8 +1,3 @@
-base_dir: "/home/dev/shieldsup"
-socket_file: "sockets/shieldsup.sock"
-temp_dir: "/tmp"
-db:
-  host: localhost
-  username: shieldsup
-  password: shieldsup
-  database: shieldsup
+db_uri: "mysql2://shieldsup:shieldsup@localhost/shieldsup"
+consumer_key: "twitter_consumer_key"
+consumer_secret: "twitter_consumer_secret"
